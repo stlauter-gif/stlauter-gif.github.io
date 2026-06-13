@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -26,12 +27,97 @@ h1 {
 
 a {
     color:#c2b280;
+    text-decoration:none;
 }
 
 .poem {
     white-space: pre-line;
 }
+
+.note-trigger {
+    text-align:center;
+    margin-top:40px;
+    color:#c2b280;
+    cursor:pointer;
+    opacity:0.8;
+    transition:0.2s;
+}
+
+.note-trigger:hover {
+    opacity:1;
+}
+
+/* Overlay */
+
+#overlay {
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.55);
+    opacity:0;
+    visibility:hidden;
+    transition:0.3s;
+    z-index:90;
+}
+
+#overlay.active {
+    opacity:1;
+    visibility:visible;
+}
+
+/* Slide-out note panel */
+
+#notePanel {
+    position:fixed;
+    top:0;
+    right:-420px;
+    width:380px;
+    height:100%;
+
+    background:rgba(20,20,20,0.95);
+    backdrop-filter:blur(10px);
+
+    padding:40px;
+    box-sizing:border-box;
+
+    border-left:1px solid rgba(194,178,128,0.2);
+
+    overflow-y:auto;
+
+    transition:right 0.35s ease;
+
+    z-index:100;
+}
+
+#notePanel.active {
+    right:0;
+}
+
+#notePanel h2 {
+    margin-top:0;
+    color:#c2b280;
+}
+
+#noteContent {
+    white-space:pre-line;
+    line-height:1.8;
+    color:#d4cec4;
+}
+
+#closeNote {
+    position:absolute;
+    top:15px;
+    right:15px;
+
+    background:none;
+    border:none;
+
+    color:#c2b280;
+    font-size:24px;
+
+    cursor:pointer;
+}
 </style>
+
 </head>
 
 <body>
@@ -39,17 +125,38 @@ a {
 <a href="catalogue.html">← Back</a>
 
 <h1 id="title"></h1>
+
 <div class="date" id="date"></div>
 
 <p class="poem" id="content"></p>
+
+<div class="note-trigger" id="openNote">
+✧ Author's Note
+</div>
+
+<div id="overlay"></div>
+
+<div id="notePanel">
+
+<button id="closeNote">×</button>
+
+<h2>Author's Note</h2>
+
+<div id="noteContent">
+No note available.
+</div>
+
+</div>
 
 <script>
 const params = new URLSearchParams(window.location.search);
 const id = params.get("id");
 
+let currentNote = "No note available.";
+
 fetch("poems.json")
-  .then(res => res.json())
-  .then(poems => {
+.then(res => res.json())
+.then(poems => {
 
     const poem = poems.find(p => p.id === id);
 
@@ -57,10 +164,34 @@ fetch("poems.json")
         document.getElementById("title").innerText = poem.title;
         document.getElementById("date").innerText = poem.date;
         document.getElementById("content").innerText = poem.content;
+
+        currentNote = poem.note || "No note available.";
     } else {
         document.getElementById("content").innerText = "Poem not found.";
     }
+
 });
+
+const panel = document.getElementById("notePanel");
+const overlay = document.getElementById("overlay");
+
+document.getElementById("openNote").addEventListener("click", () => {
+
+    document.getElementById("noteContent").innerText = currentNote;
+
+    panel.classList.add("active");
+    overlay.classList.add("active");
+
+});
+
+document.getElementById("closeNote").addEventListener("click", closePanel);
+
+overlay.addEventListener("click", closePanel);
+
+function closePanel() {
+    panel.classList.remove("active");
+    overlay.classList.remove("active");
+}
 </script>
 
 </body>
